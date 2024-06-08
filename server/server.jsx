@@ -6,11 +6,31 @@ import ReactDOMServer from 'react-dom/server'
 import express from 'express'
 
 import App from '../src/App.jsx'
+// import { writeDataToFile } from '../utils.js'
 
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-app.get('/', (req, res) => {
+app.use(express.static(path.join(__dirname, 'build')))
+
+app.use(express.json())
+
+const items =[];
+
+app.get('/api/items', (req, res) => {
+    res.json(items);
+})
+
+app.post('/api/items', (req, res) => {
+    const newItem = req.body;
+    items.push(newItem);
+    res.status(201).json(newItem)
+})
+
+
+
+
+app.get('/*', (req, res) => {
     fs.readFile(path.resolve('./public/index.html'), 'utf8', (err,data) => {
         if (err) {
             console.log(err)
@@ -24,6 +44,6 @@ app.get('/', (req, res) => {
     })
 })
 
-app.use(express.static(path.resolve(__dirname, '.', 'dist')))
+// app.use(express.static(path.resolve(__dirname, '.', 'dist')))
 
 app.listen(PORT, () => console.log('listening port 3000'))
