@@ -1,49 +1,36 @@
-import path from 'path'
-import fs from 'fs'
+import express from 'express';
+import path from 'path';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+import fs from 'fs';
+import App from '../src/App.jsx';
+import api from './api.js';
 
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import express from 'express'
-
-import App from '../src/App.jsx'
-// import { writeDataToFile } from '../utils.js'
-
-const PORT = process.env.PORT || 3000;
 const app = express();
+const PORT = 3000;
 
-app.use(express.static(path.join(__dirname, 'build')))
+// Serve static files from the dist directory
+app.use(express.static(path.join(process.cwd(), 'dist')));
 
-app.use(express.json())
+// Use the API routes
+app.use('/api', api);
 
-const items =[];
-
-app.get('/api/items', (req, res) => {
-    res.json(items);
-})
-
-app.post('/api/items', (req, res) => {
-    const newItem = req.body;
-    items.push(newItem);
-    res.status(201).json(newItem)
-})
-
-
-
-
+// Server-side rendering
 app.get('/*', (req, res) => {
-    fs.readFile(path.resolve('./public/index.html'), 'utf8', (err,data) => {
+    const appString = ReactDOMServer.renderToString(<App />);
+    const indexFile = path.resolve('./dist/index.html');
+    fs.readFile(indexFile, 'utf8', (err, data) => {
         if (err) {
-            console.log(err)
-            return res.status(500).send('error 500');
+            console.error('Something went wrong:', err);
+            return res.status(500).send('Oops, better luck next time!');
         }
-        return (
-            res.send(data.replace('<div id="root"></div>',
-            `<div id="root">
-            ${ReactDOMServer.renderToString(<App></App>)}</div>`)
-        ))
-    })
-})
 
-// app.use(express.static(path.resolve(__dirname, '.', 'dist')))
+        return res.send(
+            data.replace('<div id="root"></div>', `<div id="root">${appString}</div>`)
+        );
+    });
+});
 
-app.listen(PORT, () => console.log('listening port 3000'))
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});
