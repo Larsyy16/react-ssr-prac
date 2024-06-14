@@ -21,7 +21,7 @@ export default function App() {
     setItems([...items, response.data]);
   };
 
-  const handleClick = () => setCounter(counter + 1);
+  // const handleClick = () => setCounter(counter + 1);
   return (
     <div>
       <h1>Items List</h1>
@@ -30,7 +30,6 @@ export default function App() {
           <li key={index}>{item.name}</li>
         ))}
       </ul>
-      {/* Form for adding a new item */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
